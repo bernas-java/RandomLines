@@ -15,10 +15,10 @@ public class AppPanel extends JPanel implements Runnable, KeyListener {
     int ticks = 0;
 
     int dotsNum = 1;
-    int dotsBound = 300;
+    int dotsBound = 200;
 
-    int rc = 0;
-    int gc = 0;
+    int rc = 127;
+    int gc = 127;
     int bc = 0;
     int alpha = 255;
 
@@ -112,7 +112,11 @@ public class AppPanel extends JPanel implements Runnable, KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
-
+        if (key == 16) {
+            dots.clear();
+            dotsNum = 1;
+            dots.add(new Dot(null,null,null));
+        }
         if (key == 32) {
             bc = 250;
             stop();
