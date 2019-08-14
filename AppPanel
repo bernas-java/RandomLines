@@ -1,0 +1,131 @@
+package main;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.ArrayList;
+
+public class AppPanel extends JPanel implements Runnable, KeyListener {
+
+    static final int WIDTH = 800, HEIGHT = 600;
+
+    Thread t;
+    boolean running;
+    int ticks = 0;
+
+    int dotsNum = 1;
+    int dotsBound = 300;
+
+    int rc = 0;
+    int gc = 0;
+    int bc = 0;
+    int alpha = 255;
+
+    ArrayList<Dot> dots;
+
+    AppPanel() {
+
+        setPreferredSize(new Dimension(WIDTH,HEIGHT));
+        setFocusable(true);
+        addKeyListener(this);
+
+        dots = new ArrayList<>();
+        dots.add(new Dot(null,null,null));
+
+        start();
+    }
+
+    private void start() {
+        running = true;
+        t = new Thread(this);
+        try {
+            t.start();
+        } catch (Exception e) {
+            // handle exception...
+        }
+    }
+    private void stop() {
+        running = false;
+        try {
+            t.join();
+        } catch (Exception e) {
+            // handle exception...
+        }
+    }
+    private void tick() {
+        if (ticks == 60) {
+            newDot();
+            ticks = 0;
+        }
+        bc++;
+        if (bc == 256) {
+            bc = 0;
+        }
+        ticks++;
+    }
+
+    private void newDot() {
+        dots.add(new Dot(dots.get(dotsNum-1).getX(), dots.get(dotsNum-1).getY(), dotsBound));
+        dotsNum++;
+    }
+
+    public void paint(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+
+        g.fillRect(0,0,WIDTH,HEIGHT);
+
+        for (int i = 0; i < dots.size()-1; i++) {
+            Dot dot = dots.get(i);
+            Dot nextDot = dots.get(i+1);
+            // linia
+            g.setColor(new Color(rc,gc,bc,alpha));
+            g2.setStroke(new BasicStroke(3));
+            g2.drawLine(dot.getX(),dot.getY(),nextDot.getX(),nextDot.getY());
+        }
+        // draw points
+        if (running) {
+            for (int i = 0; i < dots.size(); i++) {
+                dots.get(i).draw(g);
+            }
+        }
+    }
+
+    @Override
+    public void run() {
+        while (running) {
+            try {
+                Thread.sleep(1000/500);
+            } catch (Exception e){
+                // handle exception...
+            }
+            tick();
+            repaint();
+        }
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        int key = e.getKeyCode();
+
+        if (key == 32) {
+            bc = 250;
+            stop();
+        }
+        if (key == 17) {
+            if (!running) {
+                start();
+            }
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
+    }
+}
